@@ -26,18 +26,18 @@ query.ts 的核心是一个 `while(true)` 循环，而不是递归调用。这�
 // 可变的跨迭代状态。循环体在每次迭代开始时解构它。
 // Continue 站点写 `state = { ... }` 而不是 9 个单独的赋值。
 type State = {
- messages: Message[]
- toolUseContext: ToolUseContext
- autoCompactTracking: AutoCompactTrackingState | undefined
- maxOutputTokensRecoveryCount: number
- hasAttemptedReactiveCompact: boolean
- maxOutputTokensOverride: number | undefined
- pendingToolUseSummary: Promise<ToolUseSummaryMessage | null> | undefined
- stopHookActive: boolean | undefined
- turnCount: number
- // 上一次迭代为什么继续。第一次迭代时为 undefined。
- // 让测试可以断言恢复路径是否触发，而无需检查消息内容。
- transition: Continue | undefined
+  messages: Message[]
+  toolUseContext: ToolUseContext
+  autoCompactTracking: AutoCompactTrackingState | undefined
+  maxOutputTokensRecoveryCount: number
+  hasAttemptedReactiveCompact: boolean
+  maxOutputTokensOverride: number | undefined
+  pendingToolUseSummary: Promise<ToolUseSummaryMessage | null> | undefined
+  stopHookActive: boolean | undefined
+  turnCount: number
+  // 上一次迭代为什么继续。第一次迭代时为 undefined。
+  // 让测试可以断言恢复路径是否触发，而无需检查消息内容。
+  transition: Continue | undefined
 }
 ```
 
@@ -50,8 +50,8 @@ type State = {
 // 如果上一次已经做了 collapse_drain_retry，这次还是 413，
 // 就不再尝试 drain，而是 fall through 到 reactive compact
 if (state.transition?.reason !== 'collapse_drain_retry') {
- const drained = contextCollapse.recoverFromOverflow(...)
- // ...
+  const drained = contextCollapse.recoverFromOverflow(...)
+  // ...
 }
 ```
 
@@ -92,18 +92,18 @@ while(true) + State 的优势：
 ```typescript
 // max_output_tokens 恢复：保留 hasAttemptedReactiveCompact
 const next: State = {
- messages: [...messagesForQuery, ...assistantMessages, recoveryMessage],
- maxOutputTokensRecoveryCount: maxOutputTokensRecoveryCount + 1, // 递增
- hasAttemptedReactiveCompact, // ← 保留！不重置
- // ...
+  messages: [...messagesForQuery, ...assistantMessages, recoveryMessage],
+  maxOutputTokensRecoveryCount: maxOutputTokensRecoveryCount + 1, // 递增
+  hasAttemptedReactiveCompact, // ← 保留！不重置
+  // ...
 }
 
 // 正常下一轮：重置恢复计数器
 const next: State = {
- messages: [...messagesForQuery, ...assistantMessages, ...toolResults],
- maxOutputTokensRecoveryCount: 0, // ← 重置
- hasAttemptedReactiveCompact: false, // ← 重置
- // ...
+  messages: [...messagesForQuery, ...assistantMessages, ...toolResults],
+  maxOutputTokensRecoveryCount: 0, // ← 重置
+  hasAttemptedReactiveCompact: false, // ← 重置
+  // ...
 }
 
 // stop_hook_blocking：保留 hasAttemptedReactiveCompact
@@ -370,12 +370,12 @@ StreamingToolExecutor 使用了一个精巧的并发控制模型：
 ```typescript
 // 核心判断：这个工具能否与其他工具并行执行？
 private canExecuteTool(isConcurrencySafe: boolean): boolean {
- const executingTools = this.tools.filter(t => t.status === 'executing')
- return (
- executingTools.length === 0 || // 没有正在执行的工具
- (isConcurrencySafe && executingTools.every(t => t.isConcurrencySafe))
- // 或者：自己是安全的 AND 所有正在执行的也是安全的
- )
+  const executingTools = this.tools.filter(t => t.status === 'executing')
+  return (
+    executingTools.length === 0 || // 没有正在执行的工具
+    (isConcurrencySafe && executingTools.every(t => t.isConcurrencySafe))
+    // 或者：自己是安全的 AND 所有正在执行的也是安全的
+  )
 }
 ```
 
@@ -409,22 +409,22 @@ private canExecuteTool(isConcurrencySafe: boolean): boolean {
 private siblingAbortController: AbortController
 
 constructor(toolDefinitions, canUseTool, toolUseContext) {
- // siblingAbortController 是 toolUseContext.abortController 的子控制器
- // 取消它不会取消父级 → query loop 不会结束这个 turn
- this.siblingAbortController = createChildAbortController(
- toolUseContext.abortController,
- )
+  // siblingAbortController 是 toolUseContext.abortController 的子控制器
+  // 取消它不会取消父级 → query loop 不会结束这个 turn
+  this.siblingAbortController = createChildAbortController(
+    toolUseContext.abortController,
+  )
 }
 
 // 在工具执行中：
 if (isErrorResult) {
- // 只有 Bash 错误才取消兄弟工具！
- // Read/WebFetch 等是独立的 — 一个失败不应该影响其他
- if (tool.block.name === BASH_TOOL_NAME) {
- this.hasErrored = true
- this.erroredToolDescription = this.getToolDescription(tool)
- this.siblingAbortController.abort('sibling_error')
- }
+  // 只有 Bash 错误才取消兄弟工具！
+  // Read/WebFetch 等是独立的 — 一个失败不应该影响其他
+  if (tool.block.name === BASH_TOOL_NAME) {
+    this.hasErrored = true
+    this.erroredToolDescription = this.getToolDescription(tool)
+    this.siblingAbortController.abort('sibling_error')
+  }
 }
 ```
 
@@ -446,17 +446,17 @@ Bash A 失败 → B、C 停止，但 query loop 继续（收集错误结果）
 
 ```typescript
 toolAbortController.signal.addEventListener('abort', () => {
- // 如果不是 sibling_error，且父级没有 abort，且没有 discard
- // → 冒泡到父级（例如权限拒绝需要结束整个 turn）
- if (
- toolAbortController.signal.reason !== 'sibling_error' &&
- !this.toolUseContext.abortController.signal.aborted &&
- !this.discarded
- ) {
- this.toolUseContext.abortController.abort(
- toolAbortController.signal.reason,
- )
- }
+  // 如果不是 sibling_error，且父级没有 abort，且没有 discard
+  // → 冒泡到父级（例如权限拒绝需要结束整个 turn）
+  if (
+    toolAbortController.signal.reason !== 'sibling_error' &&
+    !this.toolUseContext.abortController.signal.aborted &&
+    !this.discarded
+  ) {
+    this.toolUseContext.abortController.abort(
+      toolAbortController.signal.reason,
+    )
+  }
 }, { once: true })
 ```
 
@@ -468,36 +468,36 @@ toolAbortController.signal.addEventListener('abort', () => {
 ```typescript
 // Progress 消息存储在单独的队列中
 type TrackedTool = {
- // ...
- results?: Message[] // 最终结果（等工具完成后才 yield）
- pendingProgress: Message[] // Progress 消息（立即 yield）
+  // ...
+  results?: Message[] // 最终结果（等工具完成后才 yield）
+  pendingProgress: Message[] // Progress 消息（立即 yield）
 }
 
 // 当有新的 progress 消息时，唤醒等待中的 getRemainingResults
 if (update.message.type === 'progress') {
- tool.pendingProgress.push(update.message)
- // 唤醒！
- if (this.progressAvailableResolve) {
- this.progressAvailableResolve()
- this.progressAvailableResolve = undefined
- }
+  tool.pendingProgress.push(update.message)
+  // 唤醒！
+  if (this.progressAvailableResolve) {
+    this.progressAvailableResolve()
+    this.progressAvailableResolve = undefined
+  }
 }
 
 // getRemainingResults 中的等待逻辑：
 async *getRemainingResults() {
- while (this.hasUnfinishedTools()) {
- // 先 yield 已完成的结果和 progress
- for (const result of this.getCompletedResults()) {
- yield result
- }
- // 如果还有执行中的工具，等待任一完成 OR progress 到达
- if (this.hasExecutingTools() && !this.hasCompletedResults()) {
- const progressPromise = new Promise<void>(resolve => {
- this.progressAvailableResolve = resolve // 注册唤醒回调
- })
- await Promise.race([...executingPromises, progressPromise])
- }
- }
+  while (this.hasUnfinishedTools()) {
+    // 先 yield 已完成的结果和 progress
+    for (const result of this.getCompletedResults()) {
+      yield result
+    }
+    // 如果还有执行中的工具，等待任一完成 OR progress 到达
+    if (this.hasExecutingTools() && !this.hasCompletedResults()) {
+      const progressPromise = new Promise<void>(resolve => {
+        this.progressAvailableResolve = resolve // 注册唤醒回调
+    })
+    await Promise.race([...executingPromises, progressPromise])
+  }
+}
 }
 ```
 
@@ -515,22 +515,22 @@ async *getRemainingResults() {
 
 ```typescript
 if (streamingFallbackOccured) {
- // 1. 为已 yield 的 assistant 消息发送 tombstone（从 UI 和 transcript 中移除）
- for (const msg of assistantMessages) {
- yield { type: 'tombstone', message: msg }
- }
- 
- // 2. 清空所有状态
- assistantMessages.length = 0
- toolResults.length = 0
- toolUseBlocks.length = 0
- needsFollowUp = false
- 
- // 3. 丢弃旧的 executor，创建新的
- if (streamingToolExecutor) {
- streamingToolExecutor.discard() // 标记为 discarded
- streamingToolExecutor = new StreamingToolExecutor(...) // 全新的
- }
+  // 1. 为已 yield 的 assistant 消息发送 tombstone（从 UI 和 transcript 中移除）
+  for (const msg of assistantMessages) {
+    yield { type: 'tombstone', message: msg }
+  }
+
+  // 2. 清空所有状态
+  assistantMessages.length = 0
+  toolResults.length = 0
+  toolUseBlocks.length = 0
+  needsFollowUp = false
+
+  // 3. 丢弃旧的 executor，创建新的
+  if (streamingToolExecutor) {
+    streamingToolExecutor.discard() // 标记为 discarded
+    streamingToolExecutor = new StreamingToolExecutor(...) // 全新的
+  }
 }
 ```
 
@@ -577,8 +577,8 @@ Claude Code 有 **5 层**上下文压缩策略，按执行顺序排列：
 
 ```
 toolResultBudget → snip → microcompact → collapse → autocompact
- 便宜 便宜 中等 中等 昂贵
- 本地 本地 本地/API 本地 API调用
+便宜 便宜 中等 中等 昂贵
+本地 本地 本地/API 本地 API调用
 ```
 
 便宜的先做，如果够了就不需要做昂贵的。特别是 contextCollapse 在 autocompact 之前：
@@ -606,19 +606,19 @@ toolResultBudget → snip → microcompact → collapse → autocompact
 
 ```
 REPL 消息数组 (完整历史，从不修改):
- [msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8]
+[msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8]
 
 Collapse Store (摘要存储):
- commit1: { archived: [msg1, msg2, msg3], summary: "..." }
- commit2: { archived: [msg4, msg5], summary: "..." }
+commit1: { archived: [msg1, msg2, msg3], summary: "..." }
+commit2: { archived: [msg4, msg5], summary: "..." }
 
 projectView() 的输出 (每次迭代重新计算):
- [summary1, summary2, msg6, msg7, msg8]
+[summary1, summary2, msg6, msg7, msg8]
 
 优势：
- - REPL 数组从不被修改 → 不会丢失原始数据
- - 摘要可以随时重新生成
- - 类似 Git 的 commit log → 可以"回放"折叠历史
+- REPL 数组从不被修改 → 不会丢失原始数据
+- 摘要可以随时重新生成
+- 类似 Git 的 commit log → 可以"回放"折叠历史
 ```
 
 ---
@@ -630,21 +630,21 @@ projectView() 的输出 (每次迭代重新计算):
 
 ```
 阶段1: Escalate (升级限制)
- 条件: 使用了默认的 8k 限制 && 没有用户覆盖
- 动作: 重试同一请求，但 max_output_tokens = 64k
- 特点: 无额外消息，无多轮开销
+  条件: 使用了默认的 8k 限制 && 没有用户覆盖
+  动作: 重试同一请求，但 max_output_tokens = 64k
+  特点: 无额外消息，无多轮开销
 
 阶段2: Multi-turn Recovery (多轮恢复)
- 条件: 升级后仍然被截断 || 已有用户覆盖
- 动作: 注入恢复消息，让 Claude 继续
- 消息: "Output token limit hit. Resume directly — no apology,
- no recap. Pick up mid-thought if that is where the cut
- happened. Break remaining work into smaller pieces."
- 最多: 3 次
+  条件: 升级后仍然被截断 || 已有用户覆盖
+  动作: 注入恢复消息，让 Claude 继续
+  消息: "Output token limit hit. Resume directly — no apology,
+  no recap. Pick up mid-thought if that is where the cut
+  happened. Break remaining work into smaller pieces."
+  最多: 3 次
 
 阶段3: 放弃
- 条件: 3 次恢复都失败
- 动作: 显示被截断的消息
+  条件: 3 次恢复都失败
+  动作: 显示被截断的消息
 ```
 
 ** 巧思6：恢复消息的措辞**
@@ -659,23 +659,23 @@ projectView() 的输出 (每次迭代重新计算):
 
 ```
 阶段1: Context Collapse Drain
- 条件: 有待提交的折叠 && 上次不是 collapse_drain_retry
- 动作: 提交所有待处理的折叠
- 成本: 零（纯本地操作）
+  条件: 有待提交的折叠 && 上次不是 collapse_drain_retry
+  动作: 提交所有待处理的折叠
+  成本: 零（纯本地操作）
 
 阶段2: Reactive Compact
- 条件: drain 不够 || 没有 collapse
- 动作: 调用 Claude 生成摘要
- 成本: 一次 API 调用
- 特点: 只尝试一次（hasAttemptedReactiveCompact 守卫）
+  条件: drain 不够 || 没有 collapse
+  动作: 调用 Claude 生成摘要
+  成本: 一次 API 调用
+  特点: 只尝试一次（hasAttemptedReactiveCompact 守卫）
 
 阶段3: 放弃
- 条件: reactive compact 也不够
- 动作: 显示错误消息
- 关键: 不进入 Stop Hooks！
- 原因: "hooks have nothing meaningful to evaluate. Running stop hooks
- on prompt-too-long creates a death spiral: error → hook blocking
- → retry → error → …"
+  条件: reactive compact 也不够
+  动作: 显示错误消息
+  关键: 不进入 Stop Hooks！
+  原因: "hooks have nothing meaningful to evaluate. Running stop hooks
+  on prompt-too-long creates a death spiral: error → hook blocking
+  → retry → error → …"
 ```
 
 ### 4.4.3 Withhold 模式 — 延迟错误显示
@@ -701,8 +701,7 @@ if (!withheld) yield yieldMessage // 只 yield 非扣留的消息
 
 ```typescript
 // 在流式循环之前就确定 mediaRecoveryEnabled
-const mediaRecoveryEnabled =
- reactiveCompact?.isReactiveCompactEnabled() ?? false
+const mediaRecoveryEnabled = reactiveCompact?.isReactiveCompactEnabled() ?? false
 
 // 为什么？因为 CACHED_MAY_BE_STALE 可能在 5-30s 的流式传输中翻转
 // 如果 withhold 时是 true，recover 时变成 false → 消息丢失！
@@ -717,11 +716,11 @@ Anthropic API 的 prompt cache key 由以下部分组成：
 
 ```
 cache_key = hash(
- system_prompt, ← 必须完全相同
- tools, ← 必须完全相同（包括顺序）
- model, ← 必须完全相同
- messages[0..N-1], ← 前缀必须完全相同（字节级）
- thinking_config, ← 必须完全相同
+  system_prompt, ← 必须完全相同
+  tools, ← 必须完全相同（包括顺序）
+  model, ← 必须完全相同
+  messages[0..N-1], ← 前缀必须完全相同（字节级）
+  thinking_config, ← 必须完全相同
 )
 ```
 
@@ -739,9 +738,9 @@ cache_key = hash(
 // 原始 message 保持不变 → 下次请求的前缀字节相同
 let yieldMessage: typeof message = message
 if (addedFields) {
- clonedContent ??= [...message.message.content]
- clonedContent[i] = { ...block, input: inputCopy }
- yieldMessage = { ...message, message: { ...message.message, content: clonedContent } }
+  clonedContent ??= [...message.message.content]
+  clonedContent[i] = { ...block, input: inputCopy }
+  yieldMessage = { ...message, message: { ...message.message, content: clonedContent } }
 }
 // 注释："The original `message` is left untouched for assistantMessages.push
 // below — it flows back to the API and mutating it would break prompt caching
@@ -752,11 +751,11 @@ if (addedFields) {
 ```typescript
 // CacheSafeParams — 必须与父级完全相同的参数
 export type CacheSafeParams = {
- systemPrompt: SystemPrompt
- userContext: { [k: string]: string }
- systemContext: { [k: string]: string }
- toolUseContext: ToolUseContext
- forkContextMessages: Message[] // 父级的消息历史
+  systemPrompt: SystemPrompt
+  userContext: { [k: string]: string }
+  systemContext: { [k: string]: string }
+  toolUseContext: ToolUseContext
+  forkContextMessages: Message[] // 父级的消息历史
 }
 
 // Fork 子 Agent 使用父级的消息作为前缀
@@ -779,8 +778,8 @@ export type CacheSafeParams = {
 // 避免每次迭代创建新闭包 → 只保留最新的请求体 (~700KB)
 // 而不是所有请求体 (~500MB for long sessions)
 const dumpPromptsFetch = config.gates.isAnt
- ? createDumpPromptsFetch(toolUseContext.agentId ?? config.sessionId)
- : undefined
+  ? createDumpPromptsFetch(toolUseContext.agentId ?? config.sessionId)
+  : undefined
 ```
 
 ---
@@ -790,32 +789,32 @@ Token Budget 是一个让 Claude 在单次 turn 中使用更多 token 的机制�
 
 ```typescript
 export function checkTokenBudget(
- tracker: BudgetTracker,
- agentId: string | undefined,
- budget: number | null,
- globalTurnTokens: number,
+  tracker: BudgetTracker,
+  agentId: string | undefined,
+  budget: number | null,
+  globalTurnTokens: number,
 ): TokenBudgetDecision {
- // 子 Agent 不参与 budget（只有主线程）
- if (agentId || budget === null || budget <= 0) {
- return { action: 'stop', completionEvent: null }
- }
+  // 子 Agent 不参与 budget（只有主线程）
+  if (agentId || budget === null || budget <= 0) {
+    return { action: 'stop', completionEvent: null }
+  }
 
- const pct = Math.round((turnTokens / budget) * 100)
- const deltaSinceLastCheck = globalTurnTokens - tracker.lastGlobalTurnTokens
+  const pct = Math.round((turnTokens / budget) * 100)
+  const deltaSinceLastCheck = globalTurnTokens - tracker.lastGlobalTurnTokens
 
- // 巧思8：Diminishing Returns 检测
- const isDiminishing =
- tracker.continuationCount >= 3 && // 至少继续了 3 次
- deltaSinceLastCheck < DIMINISHING_THRESHOLD && // 这次增量 < 500 tokens
- tracker.lastDeltaTokens < DIMINISHING_THRESHOLD // 上次增量也 < 500
+  // 巧思8：Diminishing Returns 检测
+  const isDiminishing =
+  tracker.continuationCount >= 3 && // 至少继续了 3 次
+  deltaSinceLastCheck < DIMINISHING_THRESHOLD && // 这次增量 < 500 tokens
+  tracker.lastDeltaTokens < DIMINISHING_THRESHOLD // 上次增量也 < 500
 
- // 如果没有 diminishing 且未达到 90% → 继续
- if (!isDiminishing && turnTokens < budget * COMPLETION_THRESHOLD) {
- return { action: 'continue', nudgeMessage: '...' }
- }
+  // 如果没有 diminishing 且未达到 90% → 继续
+  if (!isDiminishing && turnTokens < budget * COMPLETION_THRESHOLD) {
+    return { action: 'continue', nudgeMessage: '...' }
+  }
 
- // 否则停止
- return { action: 'stop', completionEvent: { diminishingReturns: isDiminishing } }
+  // 否则停止
+  return { action: 'stop', completionEvent: { diminishingReturns: isDiminishing } }
 }
 ```
 
@@ -825,19 +824,19 @@ export function checkTokenBudget(
 场景：用户设置了 500k token 预算
 
 没有 DR 检测：
- Turn 1: 50k tokens (有用的工作)
- Turn 2: 30k tokens (有用的工作)
- Turn 3: 20k tokens (有用的工作)
- Turn 4: 200 tokens (Claude 说 "I think we're done")
- Turn 5: 150 tokens (Claude 说 "Is there anything else?")
- Turn 6: 100 tokens (Claude 说 "Let me know if you need more")
- ... 继续浪费 token 直到 500k ...
+  Turn 1: 50k tokens (有用的工作)
+  Turn 2: 30k tokens (有用的工作)
+  Turn 3: 20k tokens (有用的工作)
+  Turn 4: 200 tokens (Claude 说 "I think we're done")
+  Turn 5: 150 tokens (Claude 说 "Is there anything else?")
+  Turn 6: 100 tokens (Claude 说 "Let me know if you need more")
+  ... 继续浪费 token 直到 500k ...
 
 有 DR 检测：
- Turn 1-3: 同上
- Turn 4: 200 tokens → delta < 500 → 记录
- Turn 5: 150 tokens → 连续两次 delta < 500 → 停止！
- 节省了大量无意义的 token
+  Turn 1-3: 同上
+  Turn 4: 200 tokens → delta < 500 → 记录
+  Turn 5: 150 tokens → 连续两次 delta < 500 → 停止！
+  节省了大量无意义的 token
 ```
 
 ---
@@ -851,12 +850,12 @@ export function checkTokenBudget(
 // 主线程只消费 agentId === undefined 的消息
 // 子 Agent 只消费自己 agentId 的 task-notification
 const queuedCommandsSnapshot = getCommandsByMaxPriority(
- sleepRan ? 'later' : 'next',
+  sleepRan ? 'later' : 'next',
 ).filter(cmd => {
- if (isSlashCommand(cmd)) return false // slash 命令不在这里处理
- if (isMainThread) return cmd.agentId === undefined
- // 子 Agent 只消费 task-notification，不消费用户 prompt
- return cmd.mode === 'task-notification' && cmd.agentId === currentAgentId
+  if (isSlashCommand(cmd)) return false // slash 命令不在这里处理
+  if (isMainThread) return cmd.agentId === undefined
+  // 子 Agent 只消费 task-notification，不消费用户 prompt
+  return cmd.mode === 'task-notification' && cmd.agentId === currentAgentId
 })
 ```
 
@@ -876,21 +875,21 @@ const sleepRan = toolUseBlocks.some(b => b.name === SLEEP_TOOL_NAME)
 ```typescript
 // 在 query() 入口处启动预取（只触发一次）
 using pendingMemoryPrefetch = startRelevantMemoryPrefetch(
- state.messages, state.toolUseContext,
+  state.messages, state.toolUseContext,
 )
 
 // 在每次迭代的工具执行后尝试消费
 if (
- pendingMemoryPrefetch &&
- pendingMemoryPrefetch.settledAt !== null && // 已完成
- pendingMemoryPrefetch.consumedOnIteration === -1 // 还没消费过
+  pendingMemoryPrefetch &&
+  pendingMemoryPrefetch.settledAt !== null && // 已完成
+  pendingMemoryPrefetch.consumedOnIteration === -1 // 还没消费过
 ) {
- const memoryAttachments = filterDuplicateMemoryAttachments(
- await pendingMemoryPrefetch.promise,
- toolUseContext.readFileState, // 过滤已读过的文件
- )
- // ...
- pendingMemoryPrefetch.consumedOnIteration = turnCount - 1
+  const memoryAttachments = filterDuplicateMemoryAttachments(
+    await pendingMemoryPrefetch.promise,
+    toolUseContext.readFileState, // 过滤已读过的文件
+  )
+  // ...
+  pendingMemoryPrefetch.consumedOnIteration = turnCount - 1
 }
 ```
 
@@ -971,23 +970,23 @@ Claude Code 有两种工具编排模式，通过 feature gate 切换：
 // ↑ 并行执行 ↑ 串行 ↑ 并行执行
 
 function partitionToolCalls(toolUseMessages, toolUseContext): Batch[] {
- return toolUseMessages.reduce((acc, toolUse) => {
- const isConcurrencySafe = /* ... */
- // 如果当前工具安全 AND 上一批也是安全的 → 合并
- if (isConcurrencySafe && acc[acc.length - 1]?.isConcurrencySafe) {
- acc[acc.length - 1].blocks.push(toolUse)
- } else {
- acc.push({ isConcurrencySafe, blocks: [toolUse] })
- }
- return acc
- }, [])
+  return toolUseMessages.reduce((acc, toolUse) => {
+    const isConcurrencySafe = /* ... */
+    // 如果当前工具安全 AND 上一批也是安全的 → 合并
+    if (isConcurrencySafe && acc[acc.length - 1]?.isConcurrencySafe) {
+      acc[acc.length - 1].blocks.push(toolUse)
+    } else {
+      acc.push({ isConcurrencySafe, blocks: [toolUse] })
+    }
+    return acc
+  }, [])
 }
 ```
 
 **并发限制**：
 ```typescript
 function getMaxToolUseConcurrency(): number {
- return parseInt(process.env.CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY || '', 10) || 10
+  return parseInt(process.env.CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY || '', 10) || 10
 }
 ```
 默认最多 10 个工具并行，可通过环境变量覆盖。
@@ -1000,13 +999,13 @@ function getMaxToolUseConcurrency(): number {
 const config = buildQueryConfig()
 
 export type QueryConfig = {
- sessionId: SessionId
- gates: {
- streamingToolExecution: boolean // 是否启用流式工具执行
- emitToolUseSummaries: boolean // 是否生成工具使用摘要
- isAnt: boolean // 是否是 Anthropic 内部用户
- fastModeEnabled: boolean // 是否启用快速模式
- }
+  sessionId: SessionId
+  gates: {
+    streamingToolExecution: boolean // 是否启用流式工具执行
+    emitToolUseSummaries: boolean // 是否生成工具使用摘要
+    isAnt: boolean // 是否是 Anthropic 内部用户
+    fastModeEnabled: boolean // 是否启用快速模式
+  }
 }
 ```
 
@@ -1036,17 +1035,18 @@ export type QueryConfig = {
 ```typescript
 // 在工具执行完成后，异步生成摘要（不阻塞下一次 API 调用）
 nextPendingToolUseSummary = generateToolUseSummary({
- tools: toolInfoForSummary,
- signal: toolUseContext.abortController.signal,
- isNonInteractiveSession: ...,
- lastAssistantText,
-}).then(summary => summary ? createToolUseSummaryMessage(summary, toolUseIds) : null)
- .catch(() => null) // 失败静默
+  tools: toolInfoForSummary,
+  signal: toolUseContext.abortController.signal,
+  isNonInteractiveSession: ...,
+  lastAssistantText,
+})
+  .then(summary => summary ? createToolUseSummaryMessage(summary, toolUseIds) : null)
+  .catch(() => null) // 失败静默
 
 // 在下一次迭代开始时消费（Haiku ~1s，model streaming 5-30s）
 if (pendingToolUseSummary) {
- const summary = await pendingToolUseSummary
- if (summary) yield summary
+  const summary = await pendingToolUseSummary
+  if (summary) yield summary
 }
 ```
 
@@ -1180,10 +1180,10 @@ for (const event of events) {
 **通用形式**：
 ```
 Root AbortController (最高级别的取消)
- └── Group AbortController (组级别的取消)
-     ├── Task A AbortController
-     ├── Task B AbortController
-     └── Task C AbortController
+  └── Group AbortController (组级别的取消)
+    ├── Task A AbortController
+    ├── Task B AbortController
+    └── Task C AbortController
 
 取消传播规则：
 - Root 取消 → 所有 Group 和 Task 取消
