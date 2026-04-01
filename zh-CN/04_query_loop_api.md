@@ -41,7 +41,7 @@ type State = {
 }
 ```
 
-** 巧思1：transition 字段**
+**巧思1：transition 字段**
 
 注意 `transition` 字段 — 它记录了"为什么上一次迭代选择了 continue"。这不只是调试用的，
 它还用于**防止恢复循环**：
@@ -85,7 +85,7 @@ while(true) + State 的优势：
 4. continue 站点可以精确控制哪些状态重置
 ```
 
-** 巧思2：continue 站点的状态重置策略**
+**巧思2：continue 站点的状态重置策略**
 
 每个 continue 站点都精确控制哪些状态重置、哪些保留：
 
@@ -428,7 +428,7 @@ if (isErrorResult) {
 }
 ```
 
-** 巧思3：三层 AbortController 层级**
+**巧思3：三层 AbortController 层级**
 
 ```
 toolUseContext.abortController (用户按 Ctrl+C)
@@ -501,7 +501,7 @@ async *getRemainingResults() {
 }
 ```
 
-** 巧思4：Promise.race 实现非阻塞等待**
+**巧思4：Promise.race 实现非阻塞等待**
 
 这是一个经典的"多信号等待"模式：
 - 任何工具完成 → 唤醒 → yield 结果
@@ -573,7 +573,7 @@ Claude Code 有 **5 层**上下文压缩策略，按执行顺序排列：
 └─────────────────────────────────────────────────────────────┘
 ```
 
-** 巧思5：执行顺序的精心设计**
+**巧思5：执行顺序的精心设计**
 
 ```
 toolResultBudget → snip → microcompact → collapse → autocompact
@@ -647,7 +647,7 @@ projectView() 的输出 (每次迭代重新计算):
   动作: 显示被截断的消息
 ```
 
-** 巧思6：恢复消息的措辞**
+**巧思6：恢复消息的措辞**
 
 注意恢复消息的精心措辞：
 - "no apology" — 防止 Claude 浪费 token 道歉
@@ -697,7 +697,7 @@ if (!withheld) yield yieldMessage // 只 yield 非扣留的消息
 但恢复循环还在运行 — 没人在听了。Withhold 让恢复有机会成功，
 只有恢复失败时才显示错误。
 
-** 巧思7：hoisted gate 防止 withhold/recover 不一致**
+**巧思7：hoisted gate 防止 withhold/recover 不一致**
 
 ```typescript
 // 在流式循环之前就确定 mediaRecoveryEnabled
@@ -859,7 +859,7 @@ const queuedCommandsSnapshot = getCommandsByMaxPriority(
 })
 ```
 
-** 巧思9：Sleep 工具触发更深的队列消费**
+**巧思9：Sleep 工具触发更深的队列消费**
 
 ```typescript
 const sleepRan = toolUseBlocks.some(b => b.name === SLEEP_TOOL_NAME)
@@ -930,7 +930,7 @@ handleStopHooks()
  └── cleanupComputerUseAfterTurn() → 释放 CU 锁
 ```
 
-** 巧思10：API 错误时跳过 Stop Hooks**
+**巧思10：API 错误时跳过 Stop Hooks**
 
 ```typescript
 // 如果最后一条消息是 API 错误，跳过 Stop Hooks
@@ -1009,7 +1009,7 @@ export type QueryConfig = {
 }
 ```
 
-** 巧思11：为什么要快照？**
+**巧思11：为什么要快照？**
 
 注释解释了：
 ```typescript

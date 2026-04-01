@@ -41,7 +41,7 @@ type State = {
 }
 ```
 
-** Ingenuity1: transition field**
+**Ingenuity1: transition field**
 
 Note the `transition` field - it records "why the last iteration chose to continue". This is not just for debugging,
 it is also used to **prevent the recovery loop**:
@@ -85,7 +85,7 @@ Advantages of while(true) + State:
 4. Continue sites can precisely control which states are reset
 ```
 
-** Ingenuity2: State reset strategy at continue sites**
+**Ingenuity2: State reset strategy at continue sites**
 
 Each continue site precisely controls which states are reset and which are retained:
 
@@ -429,7 +429,7 @@ if (isErrorResult) {
 }
 ```
 
-** Ingenuity 3: Three-tier AbortController hierarchy**
+**Ingenuity 3: Three-tier AbortController hierarchy**
 
 ```
 toolUseContext.abortController (User presses Ctrl+C)
@@ -505,7 +505,7 @@ if (this.hasExecutingTools() && !this.hasCompletedResults()) {
 }
 ```
 
-** Clever Idea 4: Non-blocking Wait with Promise.race**
+**Clever Idea 4: Non-blocking Wait with Promise.race**
 
 This is a classic "multiple signal waiting" pattern:
 - Any tool completes → Wake up → Yield result
@@ -577,7 +577,7 @@ Claude Code has a **5-layer** context compression strategy, arranged in the orde
 └─────────────────────────────────────────────────────────────┘
 ```
 
-** Clever Idea 5: Careful Design of Execution Order**
+**Clever Idea 5: Careful Design of Execution Order**
 
 ```
 toolResultBudget → snip → microcompact → collapse → autocompact
@@ -651,7 +651,7 @@ Stage 3: Give Up
  Actions: Display the truncated message
 ```
 
-** Clever Idea 6: Careful Phrasing of Recovery Messages**
+**Clever Idea 6: Careful Phrasing of Recovery Messages**
 
 Note the careful phrasing of recovery messages:
 - "no apology" — Prevent Claude from wasting tokens apologizing
@@ -701,7 +701,7 @@ If error messages are yielded immediately, SDK consumers (such as Desktop App) w
 But the recovery loop is still running — nobody is listening. Withhold gives the recovery a chance to succeed,
 and only display the error when recovery fails.
 
-** Clever Idea 7: Hoisted Gate Prevents Inconsistency Between Withhold/Recover**
+**Clever Idea 7: Hoisted Gate Prevents Inconsistency Between Withhold/Recover**
 
 ```typescript
 // Determine mediaRecoveryEnabled before the streaming loop

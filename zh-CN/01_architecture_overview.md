@@ -208,10 +208,10 @@ startKeychainPrefetch(); // 并行读取 keychain 凭证
 
 // 2. 使用 Commander.js 定义所有 CLI 参数
 const program = new CommanderCommand()
- .option('-p, --print', '非交互模式')
- .option('--model <model>', '指定模型')
- .option('--permission-mode <mode>', '权限模式')
- // ... 几十个参数
+  .option('-p, --print', '非交互模式')
+  .option('--model <model>', '指定模型')
+  .option('--permission-mode <mode>', '权限模式');
+// ... 几十个参数
 
 // 3. 初始化各子系统
 await init(); // 认证、配置、遥测
@@ -229,34 +229,34 @@ ask({ prompt, tools, ... }); // 非交互模式
 
 ```typescript
 export class QueryEngine {
- // 每个会话一个实例
- private mutableMessages: Message[]; // 消息历史
- private abortController: AbortController; // 中断控制
- private totalUsage: NonNullableUsage; // Token 使用量追踪
- 
- // 核心方法：提交消息并获取响应流
- async *submitMessage(prompt): AsyncGenerator<SDKMessage> {
- // 1. 构建系统提示词
- const { defaultSystemPrompt, userContext, systemContext } = 
- await fetchSystemPromptParts({ tools, mainLoopModel, ... });
- 
- // 2. 处理用户输入 (slash 命令等)
- const { messages, shouldQuery } = await processUserInput(...);
- 
- // 3. 进入查询循环
- for await (const message of query({ messages, systemPrompt, ... })) {
- // 处理各种消息类型
- switch (message.type) {
- case 'assistant': yield* normalizeMessage(message); break;
- case 'user': yield* normalizeMessage(message); break;
- case 'stream_event': /* 流式事件 */ break;
- case 'attachment': /* 附件/结构化输出 */ break;
- }
- }
- 
- // 4. 返回最终结果
- yield { type: 'result', subtype: 'success', ... };
- }
+  // 每个会话一个实例
+  private mutableMessages: Message[]; // 消息历史
+  private abortController: AbortController; // 中断控制
+  private totalUsage: NonNullableUsage; // Token 使用量追踪
+
+  // 核心方法：提交消息并获取响应流
+  async *submitMessage(prompt): AsyncGenerator<SDKMessage> {
+    // 1. 构建系统提示词
+    const { defaultSystemPrompt, userContext, systemContext } =
+      await fetchSystemPromptParts({ tools, mainLoopModel, ... });
+
+    // 2. 处理用户输入 (slash 命令等)
+    const { messages, shouldQuery } = await processUserInput(...);
+
+    // 3. 进入查询循环
+    for await (const message of query({ messages, systemPrompt, ... })) {
+      // 处理各种消息类型
+      switch (message.type) {
+        case 'assistant': yield* normalizeMessage(message); break;
+        case 'user': yield* normalizeMessage(message); break;
+        case 'stream_event': /* 流式事件 */ break;
+        case 'attachment': /* 附件/结构化输出 */ break;
+      }
+    }
+
+    // 4. 返回最终结果
+    yield { type: 'result', subtype: 'success', ... };
+  }
 }
 ```
 
@@ -268,13 +268,13 @@ Claude Code 使用 `bun:bundle` 的 `feature()` 函数实现**编译时条件编
 import { feature } from 'bun:bundle';
 
 // 编译时决定是否包含代码
-const coordinatorModeModule = feature('COORDINATOR_MODE') 
- ? require('./coordinator/coordinatorMode.js') 
- : null;
+const coordinatorModeModule = feature('COORDINATOR_MODE')
+  ? require('./coordinator/coordinatorMode.js')
+  : null;
 
 const SleepTool = feature('PROACTIVE') || feature('KAIROS')
- ? require('./tools/SleepTool/SleepTool.js').SleepTool 
- : null;
+  ? require('./tools/SleepTool/SleepTool.js').SleepTool
+  : null;
 ```
 
 ### 已知的 Feature Flags
@@ -300,13 +300,13 @@ Claude Code 的消息系统是整个架构的骨架：
 
 ```typescript
 // 核心消息类型 (src/types/message.ts)
-type Message = 
- | UserMessage // 用户输入
- | AssistantMessage // Claude 响应
- | SystemMessage // 系统消息 (compact_boundary, api_error 等)
- | ProgressMessage // 工具执行进度
- | AttachmentMessage // 附件 (图片、文件、结构化输出)
- | StreamEvent // 流式事件 (message_start, content_block_delta 等)
+type Message =
+  | UserMessage // 用户输入
+  | AssistantMessage // Claude 响应
+  | SystemMessage // 系统消息 (compact_boundary, api_error 等)
+  | ProgressMessage // 工具执行进度
+  | AttachmentMessage // 附件 (图片、文件、结构化输出)
+  | StreamEvent; // 流式事件 (message_start, content_block_delta 等)
 
 // UserMessage 的 content 可以是：
 // - string: 纯文本
@@ -337,24 +337,24 @@ Assistant: [text: "package.json 的内容如下：..."]
 
 ```typescript
 // QueryEngine.ts
-async *submitMessage(prompt): AsyncGenerator<SDKMessage> {
- for await (const message of query({ ... })) {
- yield message; // 逐条产出消息
- }
+async * submitMessage(prompt): AsyncGenerator < SDKMessage > {
+  for await(const message of query({ ... })) {
+  yield message; // 逐条产出消息
+}
 }
 
 // query.ts
 async function* query(params): AsyncGenerator<Message> {
- while (true) {
- // 调用 API
- for await (const event of apiStream) {
- yield event; // 流式产出
- }
- // 执行工具
- yield* runTools(...);
- // 判断是否继续
- if (shouldStop) break;
- }
+  while (true) {
+    // 调用 API
+    for await (const event of apiStream) {
+      yield event; // 流式产出
+    }
+    // 执行工具
+    yield* runTools(...);
+    // 判断是否继续
+    if (shouldStop) break;
+  }
 }
 ```
 
@@ -369,9 +369,9 @@ async function* query(params): AsyncGenerator<Message> {
 
 ```typescript
 export const GlobTool = buildTool({
- name: 'Glob',
- inputSchema: z.object({ pattern: z.string() }),
- async call(input, context) { ... },
+  name: 'Glob',
+  inputSchema: z.object({ pattern: z.string() }),
+  async call(input, context) { ... },;
  // 以下由 buildTool 提供默认值：
  // isEnabled: () => true
  // isReadOnly: () => false
@@ -387,8 +387,8 @@ export const GlobTool = buildTool({
 // 如果 COORDINATOR_MODE 为 false，整个 require 和相关代码
 // 在编译时被完全移除，不会出现在最终 bundle 中
 const module = feature('COORDINATOR_MODE') 
- ? require('./coordinator/coordinatorMode.js') 
- : null;
+  ? require('./coordinator/coordinatorMode.js') 
+  : null;
 ```
 
 ## 1.9 context.ts — 上下文管理
@@ -398,24 +398,24 @@ const module = feature('COORDINATOR_MODE')
 ### getUserContext() — 用户上下文
 ```typescript
 export const getUserContext = memoize(async () => {
- // 1. 读取 CLAUDE.md 文件 (项目级 + 用户级)
- const claudeMd = getClaudeMds(await getMemoryFiles());
+  // 1. 读取 CLAUDE.md 文件 (项目级 + 用户级)
+  const claudeMd = getClaudeMds(await getMemoryFiles());
  
- // 2. 当前日期
- const currentDate = `Today's date is ${getLocalISODate()}.`;
+  // 2. 当前日期
+  const currentDate = `Today's date is ${getLocalISODate()}.`;
  
- return { claudeMd, currentDate };
+  return { claudeMd, currentDate };
 });
 ```
 
 ### getSystemContext() — 系统上下文
 ```typescript
 export const getSystemContext = memoize(async () => {
- // 1. Git 状态 (branch, status, recent commits)
- const gitStatus = await getGitStatus();
- // 包含：当前分支、主分支、git status --short、最近5条commit
+  // 1. Git 状态 (branch, status, recent commits)
+  const gitStatus = await getGitStatus();
+  // 包含：当前分支、主分支、git status --short、最近5条commit
  
- return { gitStatus };
+  return { gitStatus };
 });
 ```
 

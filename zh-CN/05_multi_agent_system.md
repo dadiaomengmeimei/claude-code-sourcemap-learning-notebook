@@ -122,7 +122,7 @@ export function createSubagentContext(
 }
 ```
 
-** 巧思1：setAppStateForTasks 始终共享**
+**巧思1：setAppStateForTasks 始终共享**
 
 ```typescript
 // 注释原文：
@@ -137,7 +137,7 @@ export function createSubagentContext(
 - Agent 结束时无法 kill 这些任务
 - 进程退出后变成 PPID=1 的僵尸进程
 
-** 巧思2：contentReplacementState 克隆而非新建**
+**巧思2：contentReplacementState 克隆而非新建**
 
 ```typescript
 // 注释原文：
@@ -311,7 +311,7 @@ export function resolveAgentTools(
 }
 ```
 
-** 巧思3：工具规格中的元数据**
+**巧思3：工具规格中的元数据**
 
 ```
 工具规格不只是工具名，还可以携带元数据：
@@ -378,7 +378,7 @@ const agentOptions = {
 ...(useExactTools && { querySource }),
 ```
 
-** 巧思4：为什么不检查消息内容？**
+**巧思4：为什么不检查消息内容？**
 
 因为 autocompact 会重写消息！如果递归 fork 守卫只检查消息中的 fork 标记，
 autocompact 后标记消失，守卫失效，可能导致无限递归 fork。
@@ -461,7 +461,7 @@ const shouldOmitClaudeMd =
 // Saves ~1-3 Gtok/week fleet-wide.
 ```
 
-** 巧思5：规模化的 token 节省**
+**巧思5：规模化的 token 节省**
 
 ```
 CLAUDE.md 大小: ~2-10KB (约 500-2500 tokens)
@@ -523,7 +523,7 @@ async function initializeAgentMcpServers(
 }
 ```
 
-** 巧思6：Plugin-only 策略下的信任分级**
+**巧思6：Plugin-only 策略下的信任分级**
 
 ```typescript
 // 当 MCP 被锁定为 plugin-only 时：
@@ -571,7 +571,7 @@ function resolveSkillName(
 }
 ```
 
-** 巧思7：渐进式名称解析**
+**巧思7：渐进式名称解析**
 
 ```
 用户写: skills: ["my-skill"]
@@ -649,7 +649,7 @@ if (feature('MONITOR_TOOL')) {
 }
 ```
 
-** 巧思8：finally 块确保清理**
+**巧思8：finally 块确保清理**
 
 所有清理都在 `finally` 块中，确保即使 Agent 被中断（AbortError）、
 抛出异常、或正常完成，清理都会执行。这是防御性编程的典范。
@@ -767,7 +767,7 @@ for await (const message of query({ ... })) {
 }
 ```
 
-** 巧思10：progress 消息不更新 lastRecordedUuid**
+**巧思10：progress 消息不更新 lastRecordedUuid**
 
 Progress 消息是临时的（如 Bash 的实时输出），不应该成为链的一部分。
 如果 progress 更新了 lastRecordedUuid，后续的 assistant 消息会以 progress 为 parent，
@@ -804,7 +804,7 @@ if (lastRequestId) {
 }
 ```
 
-** 巧思11：主动告诉推理服务器释放缓存**
+**巧思11：主动告诉推理服务器释放缓存**
 
 子 Agent 结束后，它的 prompt cache chain 不再需要了。
 通过发送 eviction hint，推理服务器可以提前释放这些缓存，

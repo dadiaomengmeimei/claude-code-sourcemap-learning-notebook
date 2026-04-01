@@ -122,7 +122,7 @@ export function createSubagentContext(
 }
 ```
 
-** Ingenuity 1: setAppStateForTasks is always shared**
+**Ingenuity 1: setAppStateForTasks is always shared**
 
 ```typescript
 // Original comment:
@@ -137,7 +137,7 @@ their background Bash tasks still need to be registered with the root store, oth
 - Agents cannot kill these tasks when ending
 - Processes exit and become PPID=1 zombie processes
 
-** Ingenuity 2: contentReplacementState clones instead of creating new**
+**Ingenuity 2: contentReplacementState clones instead of creating new**
 
 ```typescript
 // Original comment:
@@ -311,7 +311,7 @@ else invalidTools.push(toolSpec)
 }
 ```
 
-** Ingenuity3: Metadata in Tool Specifications**
+**Ingenuity3: Metadata in Tool Specifications**
 
 ```
 Tool specifications are not just tool names, they can also carry metadata:
@@ -378,7 +378,7 @@ So Fork must exactly replicate all cache-critical parameters from the parent.
 ...(useExactTools && { querySource }),
 ```
 
-** Ingenuity4: Why not check message content?**
+**Ingenuity4: Why not check message content?**
 
 Because autocompact rewrites messages! If the recursive fork guard only checks for fork marks in messages,
 the marks disappear after autocompact, the guard fails, potentially leading to infinite recursive forks.
@@ -461,7 +461,7 @@ const shouldOmitClaudeMd =
 // Saves ~1-3 Gtok/week fleet-wide.
 ```
 
-** Ingenuity5: Scalable Token Savings**
+**Ingenuity5: Scalable Token Savings**
 
 ```
 Size of CLAUDE.md: ~2-10KB (about 500-2500 tokens)
@@ -523,7 +523,7 @@ async function initializeAgentMcpServers(
 }
 ```
 
-** Ingenuity6: Trust Hierarchy under Plugin-only Policy**
+**Ingenuity6: Trust Hierarchy under Plugin-only Policy**
 
 ```typescript
 // When MCP is locked to plugin-only:
@@ -571,7 +571,7 @@ function resolveSkillName(
 }
 ```
 
-** Ingenuity7: Progressive Name Resolution**
+**Ingenuity7: Progressive Name Resolution**
 
 ```
 User writes: skills: ["my-skill"]
@@ -650,7 +650,7 @@ if (feature('MONITOR_TOOL')) {
 }
 ```
 
-** Ingenuity 8: The finally block ensures cleanup**
+**Ingenuity 8: The finally block ensures cleanup**
 
 All cleanup is done in the `finally` block, ensuring that cleanup will be executed even if the Agent is interrupted (AbortError),
 throws an exception, or completes normally. This is a prime example of defensive programming.
@@ -768,7 +768,7 @@ for await (const message of query({ ... })) {
 }
 ```
 
-** Ingenuity 10: progress messages do not update lastRecordedUuid**
+**Ingenuity 10: progress messages do not update lastRecordedUuid**
 
 Progress messages are temporary (like real-time output of Bash) and should not be part of the chain.
 If progress updates lastRecordedUuid, subsequent assistant messages will take progress as the parent,
@@ -805,7 +805,7 @@ if (lastRequestId) {
 }
 ```
 
-** Ingenuity 11: Proactively tell the inference server to release cache**
+**Ingenuity 11: Proactively tell the inference server to release cache**
 
 After the sub-Agent ends, its prompt cache chain is no longer needed.
 By sending an eviction hint, the inference server can proactively release this cache,
@@ -904,7 +904,7 @@ Task workflow (4 stages):
   4. Verification → Workers verify
 ```
 
-** Ingenuity 12: The Synthesis phase is the Coordinator's most important responsibility**
+**Ingenuity 12: The Synthesis phase is the Coordinator's most important responsibility**
 
 ```
 // Anti-pattern example in the system prompt:
@@ -952,7 +952,7 @@ Use this for durable cross-worker knowledge.`
 }
 ```
 
-** Ingenuity 13: Scratchpad Directory**
+**Ingenuity 13: Scratchpad Directory**
 
 Scratchpad is a key infrastructure of the Coordinator mode:
 - Workers cannot communicate directly with each other

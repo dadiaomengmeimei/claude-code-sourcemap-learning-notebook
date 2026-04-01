@@ -263,7 +263,7 @@ after a single failure either.`,
 }
 ```
 
-** Core Coding Philosophy Summary **:
+**Core Coding Philosophy Summary**:
 
 | Principle | Meaning |
 |-----------|---------|

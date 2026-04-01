@@ -260,7 +260,7 @@ function getSimpleDoingTasksSection(): string {
 }
 ```
 
-** 核心编码哲学总结**：
+**核心编码哲学总结**：
 
 | 原则 | 含义 |
 |------|------|
@@ -663,7 +663,7 @@ what specifically to change.
 `
 ```
 
-** 这是 Prompt Engineering 的精华**：
+**这是 Prompt Engineering 的精华**：
 - "像给刚走进房间的聪明同事做简报"
 - 查找任务给精确命令，调查任务给问题
 - "永远不要委托理解" — 不要让子 Agent 替你思考

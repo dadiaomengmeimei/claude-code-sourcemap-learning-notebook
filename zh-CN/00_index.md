@@ -16,12 +16,13 @@
 | 02 | [02_tool_system.md](02_tool_system.md) | 工具系统 | Tool.ts, tools.ts, GlobTool.ts | 45min |
 | 03 | [03_permission_security.md](03_permission_security.md) | 权限与安全 | permissions.ts, bashSecurity.ts | 45min |
 | 04 | [04_query_loop_api.md](04_query_loop_api.md) | 查询循环与 API (深度版) | query.ts, StreamingToolExecutor.ts | 50min |
+| 04b | [04b_context_management.md](04b_context_management.md) | 上下文管理：召回、压缩与渐进式披露 | context.ts, autoCompact.ts, toolSearch.ts | 40min |
 | 05 | [05_multi_agent_system.md](05_multi_agent_system.md) | 多 Agent 系统 + Coordinator (深度版) | AgentTool.tsx, runAgent.ts, coordinatorMode.ts | 50min |
 | 06 | [06_mcp_extensions.md](06_mcp_extensions.md) | MCP、Skills 与扩展系统 | mcp/client.ts, skills/, bundledSkills.ts | 45min |
 | 07 | [07_prompt_engineering.md](07_prompt_engineering.md) | Prompt Engineering 深度解析 | prompts.ts, BashTool/prompt.ts | 60min |
 | 08 | [08_voice_buddy.md](08_voice_buddy.md) | Voice 模式与 Buddy 系统 | voiceStreamSTT.ts, useVoice.ts, buddy/ | 30min |
 
-**总计约 5.5 小时** 可以系统性理解 Claude Code 的核心架构。
+**总计约 6 小时** 可以系统性理解 Claude Code 的核心架构。
 ---
 
 ## 架构全景图

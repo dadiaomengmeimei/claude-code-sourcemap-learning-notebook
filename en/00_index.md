@@ -16,12 +16,13 @@
 | 02 | [02_tool_system.md](02_tool_system.md) | Tool System | Tool.ts, tools.ts, GlobTool.ts | 45min |
 | 03 | [03_permission_security.md](03_permission_security.md) | Permission & Security | permissions.ts, bashSecurity.ts | 45min |
 | 04 | [04_query_loop_api.md](04_query_loop_api.md) | Query Loop & API (Advanced) | query.ts, StreamingToolExecutor.ts | 50min |
+| 04b | [04b_context_management.md](04b_context_management.md) | Context Management: Recall, Compression & Progressive Disclosure | context.ts, autoCompact.ts, toolSearch.ts | 40min |
 | 05 | [05_multi_agent_system.md](05_multi_agent_system.md) | Multi-Agent System + Coordinator (Advanced) | AgentTool.tsx, runAgent.ts, coordinatorMode.ts | 50min |
 | 06 | [06_mcp_extensions.md](06_mcp_extensions.md) | MCP, Skills & Extensions | mcp/client.ts, skills/, bundledSkills.ts | 45min |
 | 07 | [07_prompt_engineering.md](07_prompt_engineering.md) | Prompt Engineering Deep Dive | prompts.ts, BashTool/prompt.ts | 60min |
 | 08 | [08_voice_buddy.md](08_voice_buddy.md) | Voice Mode & Buddy System | voiceStreamSTT.ts, useVoice.ts, buddy/ | 30min |
 
-**Total ~5.5 hours** for a systematic understanding of Claude Code's core architecture.
+**Total ~6 hours** for a systematic understanding of Claude Code's core architecture.
 
 ---
 
@@ -92,7 +93,7 @@
 1. Chapter 08
 2. Understand: Voice hold-to-talk → WebSocket STT → Buddy deterministic generation
 
-### Complete Path (5.5 hours)
+### Complete Path (6 hours)
 1. Read chapters 01 → 08 in order
 
 ---
